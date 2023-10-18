@@ -246,16 +246,11 @@ async fn success_initialize_member() {
     // fail double-init
     let error = member1_token_context
         .token
-        .token_group_initialize_member_with_rent_transfer(
-            &payer.pubkey(),
+        .token_group_initialize_member(
             &member1_token_context.mint_authority.pubkey(),
             &group_mint_keypair.pubkey(),
             &group_authority.pubkey(),
-            &[
-                &payer,
-                &member1_token_context.mint_authority,
-                &group_authority,
-            ],
+            &[&member1_token_context.mint_authority, &group_authority],
         )
         .await
         .unwrap_err();
@@ -263,7 +258,7 @@ async fn success_initialize_member() {
         error,
         TokenClientError::Client(Box::new(TransportError::TransactionError(
             TransactionError::InstructionError(
-                1,
+                0,
                 InstructionError::Custom(TokenError::ExtensionAlreadyInitialized as u32)
             )
         )))

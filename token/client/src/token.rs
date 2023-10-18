@@ -61,7 +61,7 @@ use {
         },
         state::{Account, AccountState, Mint, Multisig},
     },
-    spl_token_group_interface::state::TokenGroup,
+    spl_token_group_interface::state::{TokenGroup, TokenGroupMember},
     spl_token_metadata_interface::state::{Field, TokenMetadata},
     std::{
         fmt, io,
@@ -3834,26 +3834,6 @@ where
         .await
     }
 
-    async fn get_additional_rent_for_new_member(&self) -> TokenResult<u64> {
-        let account = self.get_account(self.pubkey).await?;
-        let account_lamports = account.lamports;
-        let mint_state = self.unpack_mint_info(account)?;
-        let new_account_len = mint_state
-            .try_get_account_len()?
-            .checked_add(ExtensionType::try_calculate_account_len::<Mint>(&[
-                ExtensionType::TokenGroupMember,
-            ])?)
-            .ok_or(TokenError::Program(
-                spl_token_2022::error::TokenError::Overflow.into(),
-            ))?;
-        let new_rent_exempt_minimum = self
-            .client
-            .get_minimum_balance_for_rent_exemption(new_account_len)
-            .await
-            .map_err(TokenError::Client)?;
-        Ok(new_rent_exempt_minimum.saturating_sub(account_lamports))
-    }
-
     /// Initialize a token-group member on a mint
     #[allow(clippy::too_many_arguments)]
     pub async fn token_group_initialize_member_with_rent_transfer<S: Signers>(
@@ -3864,7 +3844,9 @@ where
         group_update_authority: &Pubkey,
         signing_keypairs: &S,
     ) -> TokenResult<T::Output> {
-        let additional_lamports = self.get_additional_rent_for_new_member().await?;
+        let additional_lamports = self
+            .get_additional_rent_for_fixed_len_extension::<TokenGroupMember>()
+            .await?;
         let mut instructions = vec![];
         if additional_lamports > 0 {
             instructions.push(system_instruction::transfer(
