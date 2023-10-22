@@ -1,14 +1,14 @@
 #![cfg(feature = "test-sbf")]
 
-use {
-    solana_program::system_instruction, solana_program_test::tokio::sync::Mutex,
-    spl_token_2022::extension::ExtensionType,
-};
-
 mod program_test;
 use {
     program_test::{TestContext, TokenContext},
-    solana_program_test::{processor, tokio, ProgramTest, ProgramTestContext},
+    solana_program::system_instruction,
+    solana_program_test::{
+        processor,
+        tokio::{self, sync::Mutex},
+        ProgramTest, ProgramTestContext,
+    },
     solana_sdk::{
         account::Account as SolanaAccount,
         instruction::InstructionError,
@@ -25,7 +25,7 @@ use {
                 instruction::{initialize, update},
                 GroupMemberPointer,
             },
-            BaseStateWithExtensions,
+            BaseStateWithExtensions, ExtensionType,
         },
         processor::Processor,
         state::Mint,

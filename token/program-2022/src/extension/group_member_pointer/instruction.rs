@@ -48,7 +48,8 @@ pub enum GroupMemberPointerInstruction {
     ///   * Single authority
     ///   0. `[writable]` The mint.
     ///   1. `[]`         The group mint.
-    ///   2. `[signer]`   The group's update authority.
+    ///   2. `[signer]`   The mint's group member pointer authority.
+    ///   3. `[signer]`   The group's update authority.
     ///
     ///   * Multisignature authority
     ///   0. `[writable]` The mint.
